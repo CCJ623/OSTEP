@@ -19,3 +19,9 @@
 /ostep-homework/cpu-direct-execution/measure
 
 /ostep-homework/vm-useful-tools/memory-user
+
+/ostep-homework/vm-memory-api/access_unknown_area
+/ostep-homework/vm-memory-api/forget_free
+/ostep-homework/vm-memory-api/null
+/ostep-homework/vm-memory-api/use_after_freed
+/ostep-homework/vm-memory-api/vector
