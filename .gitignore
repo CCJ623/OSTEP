@@ -29,3 +29,9 @@
 /ostep-homework/vm-tlbs/tlb
 
 /ostep-homework/vm-beyondphys/mem
+
+/ostep-homework/threads-api/main-deadlock
+/ostep-homework/threads-api/main-deadlock-global
+/ostep-homework/threads-api/main-race
+/ostep-homework/threads-api/main-signal
+/ostep-homework/threads-api/main-signal-cv
