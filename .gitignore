@@ -35,3 +35,9 @@
 /ostep-homework/threads-api/main-race
 /ostep-homework/threads-api/main-signal
 /ostep-homework/threads-api/main-signal-cv
+
+/ostep-homework/threads-practice/approximate_counter
+/ostep-homework/threads-practice/linked_list
+/ostep-homework/threads-practice/simple_concurrent_counter
+/ostep-homework/threads-practice/text.txt
+/ostep-homework/threads-practice/trie
