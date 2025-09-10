@@ -41,3 +41,15 @@
 /ostep-homework/threads-practice/simple_concurrent_counter
 /ostep-homework/threads-practice/text.txt
 /ostep-homework/threads-practice/trie
+
+/ostep-homework/threads-cv/main-one-cv-while
+/ostep-homework/threads-cv/main-two-cvs-if
+/ostep-homework/threads-cv/main-two-cvs-while
+/ostep-homework/threads-cv/main-two-cvs-while-extra-unlock
+
+/ostep-homework/threads-sema/barrier
+/ostep-homework/threads-sema/fork-join
+/ostep-homework/threads-sema/mutex-nostarve
+/ostep-homework/threads-sema/reader-writer
+/ostep-homework/threads-sema/reader-writer-nostarve
+/ostep-homework/threads-sema/rendezvous
