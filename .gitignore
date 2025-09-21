@@ -53,3 +53,12 @@
 /ostep-homework/threads-sema/reader-writer
 /ostep-homework/threads-sema/reader-writer-nostarve
 /ostep-homework/threads-sema/rendezvous
+
+/ostep-homework/threads-bugs/vector-avoid-hold-and-wait
+/ostep-homework/threads-bugs/vector-deadlock
+/ostep-homework/threads-bugs/vector-global-order
+/ostep-homework/threads-bugs/vector-nolock
+/ostep-homework/threads-bugs/vector-try-wait
+
+/ostep-homework/threads-event-based/client
+/ostep-homework/threads-event-based/server
