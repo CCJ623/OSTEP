@@ -19,7 +19,7 @@ constexpr string_view SERVER_ADDRESS = "127.0.0.1";
 constexpr int SERVER_PORT = 5678;
 constexpr auto MIN_DELAY_TIME = 0ms;
 constexpr auto MAX_DELAY_TIME = 2000ms;
-constexpr string_view SEND_MESSAGE = "Horn Pub.txt";
+constexpr string_view SEND_MESSAGE = "Horn Pub.txt\n";
 
 static size_t CONNECTION_NUM;
 

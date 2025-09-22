@@ -3,6 +3,9 @@ CPPC = g++
 CFLAGS = -g -Wall -O2
 CPPFLAGS = -g -Wall -O2 -std=c++23
 
+BOOST_INCLUDES := -I$(HOME)/vcpkg/installed/x64-linux/include
+BOOST_LIBS := -L$(HOME)/vcpkg/installed/x64-linux/lib -lboost_system
+
 # 1. 定义所有可执行文件
 TARGETS = server client
 
@@ -17,7 +20,7 @@ all: $(TARGETS)
 	$(CC) $(CFLAGS) $< -o $@
 
 %: %.cpp
-	$(CPPC) $(CPPFLAGS) $< -o $@
+	$(CPPC) $(CPPFLAGS) -static-libstdc++ $(BOOST_INCLUDES) $(BOOST_LIBS) $< -o $@
 
 # 4. clean 规则清理所有定义的 TARGETS
 clean:

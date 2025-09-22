@@ -6,191 +6,144 @@
 #include <array>
 #include <chrono>
 #include <fstream>
+#include <iostream>
+#include <memory>
 #include <string>
 #include <filesystem>
 #include <ranges>
 #include <span>
+#include <boost/asio.hpp>
 
 
 using namespace std;
 
 constexpr int PORT = 5678;
 
-class Client
+template<typename BufferType>
+void readFile(filesystem::path file_name, BufferType& buffer)
 {
-    using fd_type = int;
-public:
-    Client() : fd_(0) {}
-    Client(fd_type fd) : fd_(fd) {}
-    Client(const Client& another) = delete;
-    Client(Client&& another)
-    {
-        fd_ = another.fd_;
-        another.fd_ = -1;
-    }
-
-    Client& operator=(Client&& another)
-    {
-        if (this != &another)
-        {
-            fd_ = another.fd_;
-            another.fd_ = -1;
-        }
-
-        return *this;
-    }
-
-
-    ~Client() { if (isAlive()) close(); }
-
-    int close()
-    {
-        if (!isAlive()) return 0;
-
-        fd_type old_fd = -1;
-        swap(old_fd, fd_);
-        print("{} disconnected\n", old_fd);
-        return ::close(old_fd);
-    }
-
-    bool isAlive() const
-    {
-        return fd_ != -1;
-    }
-
-    fd_type getFd() const
-    {
-        return fd_;
-    }
-
-private:
-    fd_type fd_;
-};
-
-string readFile(filesystem::path file_name)
-{
-    ifstream file_stream{ file_name };
+    ifstream file_stream{ file_name , ios::binary };
     if (!file_stream.is_open())
     {
-        return "Faild to open file";
+        string_view error_msg = "Faild to open file";
+        buffer.assign(error_msg.begin(), error_msg.end());
     }
     else
     {
-        return { istreambuf_iterator<char>{file_stream}, {} };
+        buffer.assign(istreambuf_iterator<char>(file_stream), {});
     }
 }
 
-int main()
+class Session : public enable_shared_from_this<Session>
 {
-    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_fd == -1)
+    using SocketType = boost::asio::ip::tcp::socket;
+
+public:
+    Session(SocketType&& socket) : socket_(move(socket)) {}
+
+    void start()
     {
-        print("Can't open server socket\n");
-        return -1;
+        boost::asio::async_read_until(socket_, receive_buffer_, '\n',
+            [self = shared_from_this()](const boost::system::error_code& ec, std::size_t bytes_transferred) {
+                self->handleRead(ec, bytes_transferred);
+            });
     }
 
-    sockaddr_in server_addr;
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(PORT);
-
-    if (bind(server_fd, (sockaddr*)&server_addr, sizeof(server_addr)) == -1)
+    void handleRead(const boost::system::error_code& ec, std::size_t bytes_transferred)
     {
-        print("Can't bind\n");
-        return -1;
+        if (ec)
+        {
+            std::cerr << "Read error: " << ec.message() << std::endl;
+            return;
+        }
+
+        istream is(&receive_buffer_);
+        string file_path;
+        getline(is, file_path);
+        print("receive message({}B):\n{}\n", bytes_transferred, file_path);
+        readFile(file_path, send_buffer_);
+        boost::asio::async_write(socket_, boost::asio::buffer(send_buffer_),
+            [self = shared_from_this()](const boost::system::error_code& ec, std::size_t bytes_transferred) {
+                self->handleWrite(ec, bytes_transferred);
+            });
     }
 
-    if (listen(server_fd, 1024) == -1)
+    void handleWrite(const boost::system::error_code& ec, std::size_t bytes_transferred)
     {
-        print("Listen failed\n");
-        return -1;
+        if (ec)
+        {
+            std::cerr << "Write error: " << ec.message() << std::endl;
+        }
+        // print("send message({}B):\n{}\n",
+        //     bytes_transferred,
+        //     string_view(send_buffer_.begin(), send_buffer_.begin() + bytes_transferred));
+
+
+        // 无论读写成功与否，处理完后关闭连接
+        boost::system::error_code ignored_ec;
+        socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
+        socket_.close(ignored_ec);
     }
 
-    print("listen on {}\n", PORT);
+private:
+    SocketType socket_;
+    boost::asio::streambuf receive_buffer_;
+    string send_buffer_;
+};
 
-    int max_fd = server_fd;
-    vector<Client> clients;
-
-    while (true)
+class Listener
+{
+public:
+    Listener(boost::asio::io_context& io_context, boost::asio::ip::tcp::endpoint end_point)
+        : acceptor_(io_context)
     {
-        // clear dead clients
-        if (clients.size() > 1e5)
-        {
-            erase_if(clients, [](const auto& client) {return !client.isAlive();});
-        }
+        acceptor_.open(end_point.protocol());
+        acceptor_.set_option(boost::asio::socket_base::reuse_address(true));
+        acceptor_.bind(end_point);
+        acceptor_.listen(boost::asio::socket_base::max_listen_connections);
+    }
 
-        fd_set read_set, write_set;
-        FD_ZERO(&read_set);
-        FD_ZERO(&write_set);
-        FD_SET(server_fd, &read_set);
+    void start()
+    {
+        do_accept();
+    }
 
-        for (const auto& client : clients)
-        {
-            if (client.isAlive())
+    void do_accept()
+    {
+        acceptor_.async_accept(
+            [self = this](const boost::system::error_code& ec, boost::asio::ip::tcp::socket socket)
             {
-                FD_SET(client.getFd(), &read_set);
-                FD_SET(client.getFd(), &write_set);
-            }
-        }
-
-        auto ready_count = select(max_fd + 1, &read_set, &write_set, nullptr, nullptr);
-        if (ready_count < 0)
-        {
-            perror("select");
-            break;
-        }
-
-        if (FD_ISSET(server_fd, &read_set))
-        {
-            struct sockaddr_in client_addr;
-            socklen_t client_addr_len = sizeof(client_addr);
-            int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_addr_len);
-            if (client_fd == -1)
-            {
-                perror("accept failed");
-                continue; // 继续等待下一个连接
-            }
-            clients.emplace_back(client_fd);
-            max_fd = max(max_fd, client_fd);
-            print("connected {}:{}\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
-            --ready_count;
-        }
-
-        if (ready_count == 0) continue;
-
-        for (auto& client : clients)
-        {
-            if (!client.isAlive()) continue;
-
-            if (FD_ISSET(client.getFd(), &read_set))
-            {
-                array<byte, 1024> buffer;
-                ssize_t bytes_read = read(client.getFd(), buffer.data(), buffer.size());
-                if (bytes_read <= 0)
+                if (!ec)
                 {
-                    client.close();
+                    std::print("New connection from {}:{}\n",
+                        socket.remote_endpoint().address().to_string(),
+                        socket.remote_endpoint().port());
+
+                    std::make_shared<Session>(std::move(socket))->start();
                 }
                 else
                 {
-                    print("receive message: ");
-                    for_each_n(buffer.begin(), bytes_read, [](auto b) {
-                        print("{}", static_cast<char>(b));});
-                    print("\n");
-
-                    auto file_contents = readFile(
-                        string_view{ reinterpret_cast<const char*>(buffer.data()), static_cast<size_t>(bytes_read) });
-                    write(client.getFd(), file_contents.data(), file_contents.size());
-                    print("send back:\n{}\n", file_contents);
-
-                    client.close();
+                    std::cerr << "Accept error: " << ec.message() << std::endl;
                 }
-            }
-        }
+
+                // 继续监听下一个连接
+                self->do_accept();
+            });
     }
 
-    // 7. 关闭服务器套接字 (通常在无限循环中不会执行到这里)
-    close(server_fd);
+private:
+    boost::asio::ip::tcp::acceptor acceptor_;
+};
 
-    return 0;
 
+int main()
+{
+    boost::asio::io_context io_context;
+    Listener listener{ io_context, {boost::asio::ip::tcp::v4(), PORT} };
+    print("listen on {}\n", PORT);
+
+    listener.start();
+
+    io_context.run();
 }
+
