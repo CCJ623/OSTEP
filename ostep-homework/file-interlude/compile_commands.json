@@ -1,0 +1,18 @@
+[
+  {
+    "arguments": [
+      "/usr/local/bin/g++",
+      "-c",
+      "-g",
+      "-Wall",
+      "-O2",
+      "-std=c++23",
+      "-o",
+      "recursive_search",
+      "recursive_search.cpp"
+    ],
+    "directory": "/mnt/d/college/OSTEP/ostep-homework/file-interlude",
+    "file": "/mnt/d/college/OSTEP/ostep-homework/file-interlude/recursive_search.cpp",
+    "output": "/mnt/d/college/OSTEP/ostep-homework/file-interlude/recursive_search"
+  }
+]

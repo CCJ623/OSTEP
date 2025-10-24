@@ -62,3 +62,8 @@
 
 /ostep-homework/threads-event-based/client
 /ostep-homework/threads-event-based/server
+/ostep-homework/file-interlude/list_files
+/ostep-homework/file-interlude/recursive_search
+/ostep-homework/file-interlude/stat
+/ostep-homework/file-interlude/tail
+/ostep-homework/file-interlude/.cache
