@@ -67,3 +67,12 @@
 /ostep-homework/file-interlude/stat
 /ostep-homework/file-interlude/tail
 /ostep-homework/file-interlude/.cache
+
+/ostep-homework/file-integrity/benchmark
+/ostep-homework/file-integrity/check_crc
+/ostep-homework/file-integrity/check_csum
+/ostep-homework/file-integrity/check_fletcher
+/ostep-homework/file-integrity/check_xor
+/ostep-homework/file-integrity/create_csum
+/ostep-homework/file-integrity/output
+/ostep-homework/file-integrity/compile_commands.json
