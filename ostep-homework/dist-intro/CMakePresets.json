@@ -1,0 +1,55 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "generator": "Ninja",
+            "environment": {
+                "HB_PREFIX": "/home/linuxbrew/.linuxbrew",
+                "HB_GCC_PATH": "/home/linuxbrew/.linuxbrew/opt/gcc",
+                "HB_BINUTILS_PATH": "/home/linuxbrew/.linuxbrew/opt/binutils",
+                "HB_GCC_INTERNAL": "/home/linuxbrew/.linuxbrew/opt/gcc/lib/gcc/15/gcc/x86_64-pc-linux-gnu/15",
+                "HB_CXX_INC": "/home/linuxbrew/.linuxbrew/opt/gcc/include/c++/15",
+                "HB_CXX_TARGET_INC": "/home/linuxbrew/.linuxbrew/opt/gcc/include/c++/15/x86_64-pc-linux-gnu"
+            },
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_C_FLAGS": "--gcc-install-dir=$env{HB_GCC_INTERNAL} -B$env{HB_BINUTILS_PATH}/bin -fcolor-diagnostics",
+                "CMAKE_CXX_FLAGS": "--gcc-install-dir=$env{HB_GCC_INTERNAL} -B$env{HB_BINUTILS_PATH}/bin -stdlib=libstdc++ -isystem $env{HB_CXX_INC} -isystem $env{HB_CXX_TARGET_INC} -fcolor-diagnostics",
+                "CMAKE_EXE_LINKER_FLAGS": "--gcc-install-dir=$env{HB_GCC_INTERNAL} -stdlib=libstdc++ -L/home/linuxbrew/.linuxbrew/opt/gcc/lib/gcc/15 -L$env{HB_GCC_INTERNAL} -Wl,-rpath,/home/linuxbrew/.linuxbrew/opt/gcc/lib/gcc/15",
+                "CMAKE_SHARED_LINKER_FLAGS": "--gcc-install-dir=$env{HB_GCC_INTERNAL} -stdlib=libstdc++ -L/home/linuxbrew/.linuxbrew/opt/gcc/lib/gcc/15 -L$env{HB_GCC_INTERNAL} -Wl,-rpath,/home/linuxbrew/.linuxbrew/opt/gcc/lib/gcc/15"
+            }
+        },
+        {
+            "name": "debug",
+            "inherits": "base",
+            "binaryDir": "${sourceDir}/build/debug",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "release",
+            "inherits": "base",
+            "binaryDir": "${sourceDir}/build/release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "debug",
+            "configurePreset": "debug"
+        },
+        {
+            "name": "release",
+            "description": "",
+            "displayName": "",
+            "configurePreset": "release"
+        }
+    ]
+}

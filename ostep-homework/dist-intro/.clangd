@@ -1,0 +1,16 @@
+CompileFlags:
+  Add: [
+    "-std=c++23",
+    "-stdlib=libstdc++",
+    # 1. 显式锁定 GCC 15 安装目录
+    "--gcc-install-dir=/home/linuxbrew/.linuxbrew/opt/gcc/lib/gcc/15/gcc/x86_64-pc-linux-gnu/15",
+    # 2. 强制将 Homebrew 的头文件放在搜索路径最前面
+    "-isystem", "/home/linuxbrew/.linuxbrew/opt/gcc/include/c++/15",
+    "-isystem", "/home/linuxbrew/.linuxbrew/opt/gcc/include/c++/15/x86_64-pc-linux-gnu",
+    # 3. 这里的路径必须在系统路径之前，屏蔽掉 GCC 14
+    "-nostdinc++" 
+  ]
+  CompilationDatabase: "build/debug"
+
+Index:
+  Background: Build

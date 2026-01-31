@@ -76,3 +76,13 @@
 /ostep-homework/file-integrity/create_csum
 /ostep-homework/file-integrity/output
 /ostep-homework/file-integrity/compile_commands.json
+
+
+/ostep-homework/dist-intro/.cache
+/ostep-homework/dist-intro/.vscode
+/ostep-homework/dist-intro/build
+/ostep-homework/dist-intro/1M.txt
+/ostep-homework/dist-intro/10M.txt
+/ostep-homework/dist-intro/100M.txt
+/ostep-homework/dist-intro/log.txt
+/ostep-homework/dist-intro/received.txt
